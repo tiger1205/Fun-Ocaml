@@ -1,0 +1,331 @@
+Prblem1
+Part 1
+(a)
+let rec to_unary n =
+match n with
+| 0 -> Zero
+| n -> Succ (to_unary (n-1))
+
+I can define:
+The size of a zero is s
+the expression S(n) to represent the size of the output for the input n
+We can express S(n) in terms of S(n - 1) as follows
+S(n) =
+s                         n = 0
+S(n - 1) + s        n > 0
+(b):	
+For n>0,  we can expand S(n), then we can get:
+S(n) = S(n-1) + s
+= (S(n-2) + s) + s
+...
+= s + (s) +....+ (s)
+= s + n * (s)
+= (n+1)*s
+Prove by induction :
+Base Case (n=0):
+S(0) = s
+Done
+Inductive Step:
+I need to show S(n+1) = S(n) + s
+So we get, s + (n+1)*s + s
+Therefore, we can conclude that S(n) is O(n)
+
+Problem 1
+Part 2:
+type bin_nat =  BO | BT of bin_nat | BS of bin_nat
+let rec to_binary n =
+match n with
+| 0 -> BO
+| n -> if ((n mod 2) = 0) then BT (to_binary (n/2))
+else BS (to_binary (n/2))
+
+a)
+From the question, we know BO is the representation of 0, and    (BT b) is 2*b
+(BS b) is 2*b + 1. Then, we can represent the size of the output as follows:
+S'(n) = {s’			n = 0
+            {s’(n/2) + s'		n > 0
+
+b)
+For n>0, we can expand S'(n), we get:
+S'(n) = S'(n/2) + s'
+= (S'((n/2)/2) + s') + s'
+= (S'(n/2) + s') + s'
+= S'(0) + s' +...+ s'
+....................
+= s' * (log(n+1))            # log is base 2
+
+Proof by induction:
+I can assume that part a and for n>0, S'(n) = s' * (log (n+1)) holds:
+Base Case (n=0):
+S'(0) = s’ from part (a); Done
+Inductive Step:
+From the function definition, we can know that for n, the
+Recursive call will be k + 1 for all n/2 which is between 2^k and 2^(k+1). (FROM HANDOUT PAGE2)
+So, by strong induction, the recursive call uses
+floor of (n/2). Furthermore, assuming, for all n'<n, we can apply
+strong induction:
+S'(n') = S'(n'/2) + s'
+= s' * (log(n'/2) + 1) + s'		Inductive hypothesis 
+= s' * (log(n'/2) + 1 + 1)	              
+= s' * (log(n'+1))		               by corollary of handout (p3)
+Thus, we can see that the function is approximately O(logn)
+c)
+Assuming both S(n) and S'(n) takes the same constant time n, so
+we can express S(n) in terms of S'(n) as follows, where
+s'=s and n'=n :
+S(n)/S'(n) = ((n+1)*s) / (s' * (log(n'+1)))
+= (n+1) / (log(n'+1))
+= (n+1) / (log(n+1))			since n' = n
+> 0
+This tells me that the unary representation is greater than the binary representation. 
+So, we can conclude that the unary representation is not a reasonable one to use since S'(n) is O(logn) and O(logn) < O(n)
+Problem 1
+Part 3:
+(a):
+Let us quantify:
+n is the size of input b
+Let c1 is the time for function return
+Let c2 is the time for a recursive call
+Let c3 is the time for adding BS, BO, or BT
+We can create the recurrence equation as the following:
+T(n) = {c1 + c3                            n = 0
+        = {T(n – 1) + c2 + c3           n > 0
+(b):
+We can expand T(n) as the following:
+T(n) = T(n -1) + c2 + c3 = (T(n – 2) + c2 + c3) + c2 + c3
+        = ((T(0)+ ………) + c2 + c3) + c2 + c3
+        = n * (c2 + c3) + T(0) = n * (c2 + c3) + (c1 + c3)
+Proof by induction
+Base case: T(0) = c1 + c3 which is true because of the definition of T(n) 
+Inductive hypothesis: we can assume T(n) = n * (c2 + c3) + (c1 + c3)is true
+I need to show T(n+ 1) = c2 + c3 + T(n)
+So, T(n+1) = (n + 1) * ( c2 + c3) + ( c1 + c3)
+                   = n * (c2 + c3) + ( c2 + c3) + (c1 + c3)
+                   = c2 + c3 + T(n) 
+      Which holds for my inductive step. So, T(n) works at O(n) time
+(c):
+Let us quantify:
+n1 is the size of input b1
+n2 is the size of input b2
+Let c1 is the time for function return
+Let c2 is the time for a recursive call
+Let c3 is the time for adding BS, BO, or BT                    
+We can create the recurrence equation as the following:
+T’(n1,n2) = { T(n2)             n1 = 0
+                    { T(n1)             n2 = 0
+                    {T(n1 – 1, n2 – 1) n1 > 0, n2 > 0
+(d):
+We can expand T’(n1,n2) as the following:
+T(n1 – 1, n2 – 1) + c2 + c3 = (c2 + c3 + T(n1-2, n2-2)) + c2 + c3 
+=(c2 + c3 + (... + (T'(0, n2-n1) | T'(n1-n2, 0)))) + c2 + c3  
+(since here we are not sure whether n1 is greater than n2 or not)
+= n1 * (c2 + c3) + T(n2-n1) | n2 * (c2 + c3) + T(n1-n2)   
+So T’(n1, n2)  =  min(n1, n2) * (c2 + c3) + T(abs(n1-n2))   
+(we need to find the minimal number of n1 and n2 then find the absolute value of (n1 – n2) , 
+the function will terminate when the smaller value of n1 and n2 reaches 0, and that is the number of time 
+that constants called. The cost of percolate_carry is O(n). Therefore, we can conclude that 
+the complexity of T'(n1, n2) will be O(n)
+(e): 
+Since Plus uses plus_with_carry, and plus_with_carry will call the function percolate_carry. 
+From part d we have known that the complexity of percolate_carry is O(n). 
+Therefore I can conclude that an estimate of the time
+taken by plus is O(n) too.
+
+Problem2 
+Part a:
+Proof: ((a * b) mod p) = ((a mod p) * (b mod p)) mod p
+We can write ‘a’ as follows:  a = p * q1 + r1. q1 is an integer quotient 
+and (a mod p)= r1. We can write ‘b’ as follows: b = p * q2 + r2.
+q2 is some integer quotient and (b mod p)= r2
+Right-Hand-Side :(( a mod p) * (b mod p)) mod p = (r1 * r2) mod p
+Left-Hand-Side (LHS): ((a * b) mod p) = ((p*q1 + r1) * (p*q2 + r2)) mod p
+= ((p*q1 + r1) mod p * (p*q2 + r2) mod p ) mod p
+Since both (p*q1) and (p*q2) are multiples of p, therefore I can say
+(p*q1 + r1) mod p = r1 and (p*q2 + r2) mod p = r2. Also, I know r1 and r2 are remainders for the two parts. 
+So,I can get that  ((p*q1 + r1) mod p * (p*q2 + r2) mod p ) mod p = (r1 * r2) mod p = RHS
+We found that LHS = RHS, so we can conclude that the initial claim holds.
+Part b:
+Prove: For all natural numbers a, b, and p, (exp_mod a b p) evaluates to (a^b mod p)
+Proof by INDUCTION(Strong) :
+Let P(b') be the proposition that, for all natural numbers a,b,p
+(exp_mod a b p) evaluates to (a^b mod p). So we'll apply induction on b'
+where, for all b and b', (b'<b) .
+-BASE CASE (b' = 0)
+According to math_exp, a^0 should evaluate to 1. So by definition
+of exp_mod, it should evaluate as: (a^0) mod p = 1 mod p
+Therefore, the base case holds.
+-Inductive step (b' > 0 ):
+I assume all b’ > 0 is true for  (exp_mod a b p) evaluates to a^b mod p.
+Case 1: if b’ is divisible by 2, according to function definition, the function gives
+((exp_mod a (b'/2) p * (exp_mod a (b'/2) p))) mod p
+which evaluates to ( a^(b'/2) mod p)* ( a^(b'/2) mod p)) mod p (from my inductive hypothesis)
+From the part 1, we know ((a mod p) * (b mod p)) mod p = ((a * b) mod p)
+So (a^(b'/2) mod p)* ( a^(b'/2) mod p)) mod p = ((a^(b’/2)) * (a^(b’/2))) mod p
+= (a^b’) mod p which is true from my inductive hypothesis
+Case 2: if b’ is not divisible by 2, according to function definition, the function gives
+((a mod p) * (exp_mod a (b’-1) p)) mod p. (1)
+Then, the recursive call of exp mod a (b’-1) p will give us the following: since b is not divisible by 2, 
+so (b-1) is divisible by 2, then exp mod a (b’-1) p = ((exp_mod a ((b'-1)/2) p * (exp_mod a ((b' – 1)/2) p))) mod p ,
+which evaluates to ( a^((b' – 1)/2) mod p)* ( a^((b' – 1)/2) mod p)) mod p. From the part 1, 
+we know ((a mod p) * (b mod p)) mod p = ((a * b) mod p)
+So (a^((b' – 1)/2) mod p)* ( a^((b' – 1)/2) mod p)) mod p = ((a^((b’ – 1) /2)) * (a^((b’ – 1) /2))) mod p 
+= (a^(b’ – 1)) mod p, and from the equation (1), we can know ((a mod p) * (a^(b’ – 1)) mod p) mod p will evaluates to 
+(a mod p) * (a^(b’-1) mod p) = (a * a^(b’ -1)) mod p = (a ^ b’) mod p which is true from my inductive hypothesis.
+Therefore, I can conclude that for all b’ which is greater than 0, (exp_mod a b’ p) evaluates to a b’ mod p. So done!
+Part c:
+We need to Put a bound on the sizes of numbers that we will have to deal with in the computation carried out by exp_mod.
+We know when b=0, it evaluates to 1 mod p. Otherwise, the function reduces b by dividing with 2 if b is even or 
+subtracting by minus 1 if b is odd number. Therefore, value a, and value b remain unchanged. Also, we know that a is 
+completely unchanged and b is reduced only to solve smaller sub-problems recursively. However, in the last else case, 
+we can see the function consists of multiplication of 2 mod p's. So, the maximum that p can be is p^2. 
+Therefore, we can conclude that the number of computation is bounded by max (a, b, p^2).
+
+Part d:
+Let us quantify:
+The cost of mode operation as c1
+The cost of multiply is c4
+The cost of recursive call as c2
+The cost of the return from a recursive call as c3
+From our function, we can separate T(b) to the three different cases.
+When b = 0, T(b) = c1
+When b Is divisible by two, T(b) = 2c1 + T(b/2) + c4 + c3 + c2
+When b is not divisible by two, T(b) = 2c1 + T(b -1)  + c4 + c2 + c3
+So I can define 2c1 + c4 + c3 + c2 = constant c5
+T(b) <= { c1                 b = 0
+{ c5 + T(floor(b/2))    b!= 0
+
+Problem 2
+Part e:
+we can expand T(b) using that:
+T(b) = T(floor(b/2)) + c5 = (T(floor (b/4)) + c5) + c5
+…...
+= (c5)+....+(c5) = (c5)+....+(logb)*(c5) (log is base 2)
+We can clearly see that the number of c5 is logb + 1
+Proof by induction:
+Inductive Hypothesis: T(b') = logb' + 1
+BASE CASE (when b'=0):
+True
+Inductive step (when b'>0):
+From the part 4, we can get the following:
+T(b') = T(floor(b'/2)) + c5. we'll assume c5 takes a constant time. So,
+T(b') = T(floor(b'/2)) + 1 = (log(b'/2) + 1) + 1	inductive hypothesis
+= log(b'/2) + 2 = logb' - log2 + 2 		division law of logarithms
+= logb' - 1 + 2 	 log2 = 1    = logb' + 1 	inductive hypothesis
+Therefore, we can conclude that the inductive step holds.
+Then, we need to find the big-O notation:
+logb + 1 < logb + logb < 2logb			(c = 2)
+So, the function is O(logb)
+
+Problem 3
+Part 1:
+Given the function: let rec partition l =
+match l with
+| [] -> ([],[])
+| [_] -> (l,[])
+| (h1::h2::l') ->
+let (t1,t2) = partition l' in (h1::t1,h2::t2)
+Let us quantify
+The cost of appending the two heads of a list to a separate list as c1
+The cost of recursive call as c2
+The cost of the return from a recursive call as c3
+n is the length of the input lis
+Let T (n) represent the running time of partition as a function of the input list l
+We can express T(n) in terms of T(n-1) as follows
+T(n) = { c2 + c3			            n=0
+{ c2 + c3					n=1
+{ T(n-1) + c1 + c2 + c3		                        n>1
+Proof by induction:
+Base case:
+When n is > = 1 then T (n) = c2 + c3 which is right, so base case done
+Inductive:
+For n > 1, we can expand T(n), then we can get:
+T (n) = T (n - 1) + c1 + c2 + c3
+= T (n - 2) + (c1 + c2 + c3) + (c1 + c2 + c3)
+………………..
+= c2 + c3 + (c1 + c2 + c3) + . . . + (c1 + c2 + c3)
+T (n) = c2 + c3 + n * (c1 + c2 + c3)
+Therefore, T (n) is in O (n), and we can conclude that partition’s running time is O (n).
+
+Problem 3
+Part 2:
+let rec merge l1 l2 =
+match (l1,l2) with
+| (([],l) | (l,[])) -> l
+| (h1::t1,h2::t2) ->
+if (h1 < h2) then h1 :: merge t1 l2
+else h2 :: merge l1 t2
+This function takes two input lists and create a new list which is a merged of the two inputs.
+At first, it checks the first elements of the two lists (h1 and h2).If h1<h2 then it will put 
+h1 to the front of the new output list. Otherwise, it will put h2 to the front of the new output list. 
+Then the function will keep moving on.
+Let us quantify
+n1 and n2 is the length of l1 and l2
+c1 is the cost of cons an element to the output list
+c2 is the cost of recursive call
+c3 is the cost of return from a recursive call
+The recurrence relation I have is:
+T'(n1, n2) = {c2 + c3	                         (n1=0 n2=0} and (n1=1 n2=1)
+{ c1+c2+c3 + T’ (n1-1, n2) + T'(n1, n2-1)        n1>1, n2>1
+We can expand T'(n1, n2):
+T'(n1, n2) = T'(n1-1, n2) + T'(n1, n2-1) + c1+c2+c3
+= (T'(n1-2, n2) + T'(n1, n2-1) + c1+c2+c3)
++ (T'(n1-1, n2) + T'(n1, n2-2) + c1+c2+c3)
++ c1 + c2 + c3
+……………….
+= c2+c3 + n1*(c1+c2+c3) + n2*(c1+c2+c3)
+Proof by induction:
+Base Case:
+For (n1=0, n2=0): T'(0,0) = c2 + c3
+For (n1=1 or n2=1), T' = c2 + c3
+So, the base case Done
+Inductive Step (n1>1, n2>1):
+We need to show: T'(n1+1, n2+1) = T'(n1, n2) + T'(n1, n2) + c1+c2+c3
+T'(n1+1, n2+1) = c2+c3 + (n1+1)*(c1+c2+c3) + (n2+1)*(c1+c2+c3)
+= c2+c3 + n1*(c1+c2+c3) + n2*(c1+c2+c3) + (c1+c2+c3) + (c1+c2+c3)
+Therefore, the inductive step done.
+So, we can conclude from the above discussion that T'(n1, n2) is O (n1+n2).
+
+Problem 3
+Part 3:
+let rec mergesort l =
+match l with
+| ([] | [_]) -> l
+| _ -> let (l1,l2) = partition l
+in let l1' = mergesort l1
+in let l2' = mergesort l2
+in merge l1' l2'
+This function combines the first two functions partition and merge. 
+Firstly, It takes a list as its input and using the function partition to divide it. 
+Then we will get two lists. Let’s rename them as list l1 and list l2
+After that, we use l1 and l2 to recursively call with function mergesort. 
+The function "merge" does the job of merging the elements.
+Let us quantify:
+n is the length of the input list
+C1 is the time required to solve problems of size 1 as well as the time per list element of the divide and combine steps
+C2 is the cost of recursive call
+C3 is the cost of return from a recursive call
+So, we can have the following recurrence relation:
+T’’ (n) = {c2 + c3			n=0
+           = {c2 + c3			n=1
+           = {2T’’ (n/2) + c1*n + c2 + c3	n>1
+I can expand T’’ (n), then I will get:
+T’’ (n) = 2T’’ (n/2) + c1*n + c2 + c3
+          = 2(2T’’ (n/4) + c1*(n/2) +c2 + c3) + c1*n + c2 + c3
+          = 4T’’ (n/4) + (c1*n + c2 + c3) + (c1*n + c2 + c3) + 
+            .........
+          = nT’’ (n/n) + (c1*n + c2 + c3) +...+ (c1*n + c2 + c3) + (c1*n + c2 + c3)
+          = (c1*n + c2 + c3) + (c1*n + c2 + c3) +...+ (c1*n + c2 + c3) + (c1*n + c2 + c3)  
+Here, we can clearly see that the number of (c1*n + c2 + c3) is logn + 1. So, the run time should be: n*(logn+1) = nlogn + n.
+nlogn + n < nlogn + nlogn = 2nlogn.
+Prove by Induction:
+Inductive hypothesis: T’’ (n) = nlogn + n
+Base Case: When n=0, True. When n=1, T’’ (1) = 1log1 + 1 = 1
+So, the base case Done
+Inductive Step: (n'<n):
+T’’ (n') = 2T’’ (n/2) + c1*n + c2 + c3
+From the equation of T’’ (n’), c1, c2, and c3 are all constant times.
+T’’ (n')	= 2T’’ (n/2) + n    = 2((n/2) T’’ (n/2) + (n/2)) + n	inductive hypothesis
+             = nlog(n/2) + 2n = n(logn - log2) + 2n	            logarithmic division
+             = n(logn - 1) + 2n				log2 = 1
+             = nlogn - n + 2n = nlogn + n
+Therefore, the inductive step holds. Therefore, the running time is O (nlog(n)).
