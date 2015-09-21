@@ -1,0 +1,135 @@
+Finding Friends (cont) using Ocaml
+
+
+Ocaml is one of the most interesting programming languange I have learnt so far!!!!!!! Here is a simply application.
+ let friendsList =
+   [ ("Andy", ["Ben";"Candy"; "Danny"]);
+
+     ("Ben", ["Andy";"Candy"; "Danny"; "Ella"]);
+
+     ("Candy", ["Andy";"Ben"; "Danny"; "Ella"]);
+
+     ("Danny", ["Andy";"Ben"; "Candy"; "Ella"]);
+
+     ("Ella", ["Ben";"Candy"; "Danny"]) ]
+
+ 
+
+(*1a*)
+ Given a person and a list of his/her friends, define a function makePairLists that will associate the list with each pair of the person and a friend.
+
+let makePairLists p fl = List.map(fun x -> if (p < x) then ((p,x),(fun x-> x)fl)
+
+                                          else((x,p),(fun x-> x)fl)) fl
+
+ 
+
+(*1b*)
+ Define the function makeAllPairLists that will take the input to the problem and will transform it into the form we want as output of the mapping phase.
+
+(*Helper function*)
+let getString lst=
+
+    match lst with
+
+    |(a,b) -> a
+
+ (*Helper function*)
+
+let getList lst =
+
+    match lst with
+
+    |(a,b) -> b
+
+
+
+let makeAllPairLists l =  List.map (fun y-> makePairLists (getString y) (getList y) ) l
+
+(*2a*)
+we will define intersection using an aggregation function
+ let mem =List.mem
+
+let union l1 l2 =List.fold_right (fun x l -> if mem x l then l else x::l) l1 l2
+
+let intersect l1 l2 = List.fold_right (fun x l -> if mem x l2 then x::l else l) l1 []
+
+ 
+
+(*2b*)
+ Define the function addOnePair that takes one pair of friends and a list of potential common friends and assimilates this information into a previously computed, partial list of common friends.
+ (*Helper function*)
+ let rec membership ((str1,str2),strlist) lst =
+
+        match lst with
+
+        |[] -> false
+
+        |((s1,s2),slist)::t -> if str1 = s1&& str2 = s2 then true
+
+                               else membership((str1,str2),strlist) t
+
+
+
+ let rec addOnePair ((str1,str2),strlist) lst =
+
+    if membership ((str1,str2),strlist) lst =false then lst @ [((str1,str2),strlist)]
+
+    else
+
+        match lst with
+
+        |[] -> [((str1,str2),strlist)]
+
+        |((s1,s2),slist) :: t -> if str1 =s1 && str2 = s2 then ((str1,str2), intersect slist strlist):: t
+
+                                      else((s1,s2),slist):: addOnePair ((str1,str2),strlist) t  
+
+
+
+(*2c*)
+ Finally, define the aggregation function called addAllPairs that will take a list that associates the friends of a person with each  pair of that person and his/her friends and a partially aggregated output to construct a more accurate aggregated output.
+
+let addAllPairs ppls l = List.fold_left (fun x y -> addOnePair y x) l ppls
+
+(*3*)
+Put the mapping and the aggregation operations together in a map-reduce combination to get a solution to the problem.
+ 
+ let commonFriendsl = List.fold_right addAllPairs (makeAllPairLists l) []
+
+DONE!!!!
+
+Input:let friendList =
+   [ ("Andy", ["Ben";"Candy"; "Danny"]);
+
+     ("Ben", ["Andy";"Candy"; "Danny"; "Ella"]);
+
+     ("Candy", ["Andy";"Ben"; "Danny"; "Ella"]);
+
+     ("Danny", ["Andy";"Ben"; "Candy"; "Ella"]);
+
+     ("Ella", ["Ben";"Candy"; "Danny"]) ]
+
+
+Output:   
+ # commonFriends friendsList;;
+
+- : ((string * string) * string list) list =
+
+[(("Ben", "Ella"), ["Candy"; "Danny"]);
+
+ (("Candy", "Ella"), ["Ben"; "Danny"]);
+
+ (("Danny", "Ella"), ["Ben"; "Candy"]);
+
+ (("Andy", "Danny"), ["Ben"; "Candy"]);
+
+ (("Ben", "Danny"), ["Andy"; "Candy"; "Ella"]);
+
+ (("Candy", "Danny"), ["Andy"; "Ben"; "Ella"]);
+
+ (("Andy", "Candy"), ["Ben"; "Danny"]);
+
+ (("Ben", "Candy"), ["Andy"; "Danny"; "Ella"]);
+
+ (("Andy", "Ben"), ["Candy"; "Danny"])]
